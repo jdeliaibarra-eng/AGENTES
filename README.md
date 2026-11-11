@@ -49,3 +49,18 @@ y abra http://localhost:3000.
 - Cada visitante tiene su propia sesión (identificador guardado en su navegador); las sesiones de más de 7 días se borran solas.
 - Las tablas tienen RLS activado y sin políticas: la API pública de Supabase no puede leerlas; solo el servidor (con su `DATABASE_URL`) accede.
 - No comparta el `DATABASE_URL` ni lo suba a GitHub.
+
+## Intérprete con modelo de lenguaje (opcional)
+Por defecto el agente interpreta los mensajes con reglas. Si define una clave en Vercel (Settings → Environment Variables, para Production y Preview) y vuelve a desplegar, un modelo de lenguaje traduce el mensaje del cliente a datos (productos, cajas, descuento pedido, fecha, intención).
+
+| Variable | Obligatoria | Para qué sirve |
+|---|---|---|
+| `GEMINI_API_KEY` | una de las dos | Clave de Google AI Studio (aistudio.google.com/apikey). Tiene capa gratuita, sin tarjeta. Si está definida, se usa Gemini. |
+| `ANTHROPIC_API_KEY` | una de las dos | Clave de la API de Anthropic (de pago por uso). Solo se usa si no hay `GEMINI_API_KEY`. |
+| `LLM_MODEL` | no | Modelo a usar. Por defecto `gemini-2.5-flash-lite` (Gemini) o `claude-haiku-5-5` (Anthropic). Confirme en AI Studio qué modelos tiene su capa gratuita. |
+| `LLM_MAX_POR_SESION` | no | Tope de llamadas al modelo por visitante. Por defecto 60. |
+
+- El modelo **solo traduce**. Precio, descuento autorizado, stock y crédito los sigue decidiendo el motor, y todo lo que devuelve el modelo se valida contra el catálogo (`sanear()` en `lib/core.js`).
+- Sin clave, con error de red, con límite de cuota agotado (error 429) o si el modelo no entiende, se usa el intérprete por reglas: el agente nunca se queda sin responder.
+- En la capa gratuita de Gemini, Google puede usar los mensajes enviados para mejorar sus productos. Aquí todo son datos ficticios; no escriba datos reales de clientes.
+- Si usa la capa de pago de cualquier proveedor, configure un límite de gasto mensual: el enlace es público.
