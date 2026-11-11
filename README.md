@@ -3,7 +3,7 @@
 Simulador académico: el cliente escribe su pedido, el agente cotiza, valida el descuento y, si el cliente pide otro, **espera** la decisión de la persona con autoridad (bandeja interna). Datos ficticios.
 
 ## Cómo está armado
-
+## ramita de prueba
 ```
 Navegador (public/index.html)  ──fetch──▶  /api/op, /api/estado, /api/bitacora   (funciones de Vercel)
                                                 │  lib/servicio.js  → lib/core.js (agente) → lib/motor.js (ERP: controles C0–C4)
