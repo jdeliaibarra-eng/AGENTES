@@ -1,0 +1,8 @@
+{
+  "name": "agente-comercial-gloria",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Simulador académico de agente comercial por chat (GE703 PC3). Datos ficticios.",
+  "engines": { "node": ">=20" },
+  "dependencies": { "pg": "^8.11.0" }
+}

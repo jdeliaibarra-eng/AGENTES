@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulador de agente comercial · caso Gloria · GE703 PC3</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a3a82'/%3E%3Ctext x='32' y='46' font-size='40' font-weight='800' text-anchor='middle' fill='%23fff' font-family='Arial'%3EG%3C/text%3E%3C/svg%3E">
+<style>
+/*CSS*/
+</style>
+</head>
+<body>
+<div class="aviso">Simulador académico del curso GE703 (UNI/FIIS) · datos ficticios · no es un sitio ni un canal oficial de Leche Gloria.</div>
+<header class="top">
+  <div class="logo">A</div>
+  <div class="tit"><b>Agente comercial · caso Gloria</b><small>GE703 · PC3 · Grupo 6 · atención al cliente por chat</small></div>
+  <div class="esp"></div>
+  <label>Ingresa como<select id="cliente" aria-label="Cliente que ingresa al chat"></select></label>
+  <label>Fecha del sistema<input type="date" id="fecha"></label>
+  <button class="sec" id="reiniciar" type="button">↺ Reiniciar sesión</button>
+  <button class="sec" id="csv" type="button">📋 Bitácora (CSV)</button>
+</header>
+<main class="grid">
+  <section class="card chat" aria-label="Chat del cliente">
+    <div class="chat-head"><div class="av">A</div><div><b>Agente comercial · caso Gloria</b><small>● En línea</small></div><div class="vista">Vista del<br>cliente</div></div>
+    <div class="estado" id="estado"></div>
+    <div id="msgs" aria-live="polite"></div>
+    <div id="chips"></div>
+    <form id="form" autocomplete="off"><input id="txt" type="text" placeholder="Escriba su pedido… (ej.: 200 cajas de evaporada para el lunes con 8 % de descuento)" aria-label="Mensaje"><button id="enviar" type="submit">Enviar</button></form>
+  </section>
+  <section class="card panel" aria-label="Vista interna">
+    <nav class="tabs">
+      <button class="on" data-t="bandeja" type="button">Bandeja interna <span class="bd" id="bd">0</span></button>
+      <button data-t="traza" type="button">Traza del agente</button>
+      <button data-t="escen" type="button">Escenarios</button>
+      <button data-t="doc" type="button">Cómo funciona</button>
+    </nav>
+    <div class="pane on" id="pane-bandeja"><div id="bandeja" style="display:flex;flex-direction:column;gap:14px"></div></div>
+    <div class="pane" id="pane-traza"><h3>Controles del ERP</h3><div id="erp"></div><h3>Qué ha pasado, paso a paso</h3><div id="linea"></div></div>
+    <div class="pane" id="pane-escen"><div id="escen" style="display:flex;flex-direction:column;gap:12px"></div></div>
+    <div class="pane" id="pane-doc"><div id="doc" style="display:flex;flex-direction:column;gap:14px"></div></div>
+  </section>
+</main>
+<div id="modal" class="modal" hidden><div class="modal-c"><h3>Bitácora del agente (CSV)</h3><p class="mini">Copie el texto y péguelo en un archivo .csv o en Excel.</p><textarea id="csvtxt" readonly rows="10"></textarea><div class="acc"><button class="btn az" id="csvcopiar" type="button">Copiar</button><button class="btn mal" id="csvcerrar" type="button">Cerrar</button><span class="mini" id="csvmsg"></span></div></div></div>
+<script id="datos-embebidos" type="application/json">/*DATOS*/</script>
+<script>
+/*API*/
+</script>
+<script>
+/*UI*/
+</script>
+</body>
+</html>

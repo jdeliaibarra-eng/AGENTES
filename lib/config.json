@@ -1,0 +1,27 @@
+{
+ "version_config": "1.0.0",
+ "empresa": "Leche Gloria S.A. (caso académico, datos sintéticos)",
+ "moneda": "PEN",
+ "igv_pct": 18,
+ "tramos_descuento": {
+  "ejecutivo_max_pct": 5,
+  "jefatura_max_pct": 10
+ },
+ "umbral_volumen_cajas": 300,
+ "vigencia_dias_defecto": 14,
+ "dias_entrega_defecto": 7,
+ "dias_fecha_limite_respuesta": 2,
+ "bloquear_duplicados": true,
+ "cantidad_max_cajas_por_linea": 100000,
+ "prefijo_solicitud": "SOL-",
+ "prefijo_pedido": "PED-",
+ "roles": {
+  "ejecutivo": "Ejecutivo comercial",
+  "jefatura": "Jefatura Comercial",
+  "finanzas": "Finanzas",
+  "almacen": "Almacén (EWM) con Calidad (QM)",
+  "planeamiento": "Planeamiento / Producción (PP-PI)",
+  "datos_maestros": "Datos maestros (MDG) / Finanzas",
+  "ti": "TI / Integración"
+ }
+}
