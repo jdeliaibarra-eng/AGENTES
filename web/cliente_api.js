@@ -40,8 +40,10 @@
         return Math.max(450, Math.min(1300, 300 + n * 7));
       }
 
-      function pedir(url, init) {
-        return fetch(base + url, init).then(function (r) {
+      function pedir(url, init) { // con tiempo máximo: si el servidor no responde, el chat lo avisa en vez de quedarse en blanco
+        var ctl = typeof AbortController !== "undefined" ? new AbortController() : null, tm = null;
+        if (ctl) { init = Object.assign({}, init, { signal: ctl.signal }); tm = setTimeout(function () { ctl.abort(); }, 28000); }
+        return fetch(base + url, init).catch(function (e) { throw new Error(e && e.name === "AbortError" ? "el servidor tardó demasiado" : "sin conexión con el servidor"); }).finally(function () { if (tm) clearTimeout(tm); }).then(function (r) {
           return r.json().catch(function () { return { ok: false, error: "Respuesta inválida del servidor." }; }).then(function (j) {
             if (!j.ok) { var e = new Error(j.error || "Error del servidor."); throw e; }
             return j;
