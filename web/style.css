@@ -189,3 +189,16 @@ code { font-family: var(--mono); font-size: .86em; background: #eef2f8; padding:
 .modal[hidden] { display: none; }
 .modal-c { background: #fff; border-radius: 14px; padding: 18px; width: min(720px, 100%); display: flex; flex-direction: column; gap: 10px; box-shadow: var(--sombra); }
 .modal-c textarea { width: 100%; font: .78rem/1.4 var(--mono); border: 1px solid #c3cde0; border-radius: 8px; padding: 8px; resize: vertical; }
+
+.fld { display: flex; flex-direction: column; gap: 4px; font-size: .78rem; font-weight: 700; color: #33415c; }
+.fld input, .fld select { font: inherit; font-weight: 400; border: 1px solid #c3cde0; border-radius: 8px; padding: 8px; }
+
+.cli-barra { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cli-tabla { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #dfe5f0; border-radius: 10px; overflow: hidden; font-size: .8rem; }
+.cli-tabla th { text-align: left; font-size: .64rem; text-transform: uppercase; letter-spacing: .06em; color: var(--tinta-2); padding: 8px; background: #f0f4fb; }
+.cli-tabla td { padding: 8px; border-top: 1px solid #e8edf6; vertical-align: top; }
+.cli-tabla td.num, .cli-tabla th.num { text-align: right; white-space: nowrap; }
+.cli-tabla small { display: block; color: var(--gris); }
+.etq { display: inline-block; border-radius: 999px; padding: 2px 8px; font-size: .68rem; font-weight: 700; }
+.etq.lead { background: #fff1d6; color: #8a5a00; } .etq.act { background: #dcf3e7; color: #0b7342; } .etq.nvo { background: #e3ecff; color: #1b4a9c; margin-left: 6px; }
+.nota-cat { color: #8a5a00 !important; font-weight: 700; }

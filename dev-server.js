@@ -1,6 +1,6 @@
 // Servidor local mínimo que imita a Vercel (solo para probar en tu computador): node dev-server.js
 const http = require("http"), fs = require("fs"), path = require("path");
-const handlers = { "/api/op": require("./api/op"), "/api/estado": require("./api/estado"), "/api/bitacora": require("./api/bitacora") };
+const handlers = { "/api/op": require("./api/op"), "/api/estado": require("./api/estado"), "/api/bitacora": require("./api/bitacora"), "/api/clientes": require("./api/clientes") };
 const PORT = process.env.PORT || 3000;
 http.createServer((req, res) => {
   const u = new URL(req.url, "http://x");

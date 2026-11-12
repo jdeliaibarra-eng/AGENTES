@@ -2,7 +2,11 @@
 (function () {
   "use strict";
   var EMB = JSON.parse(document.getElementById("datos-embebidos").textContent);
-  var FECHA_DEMO = "2026-11-10"; // fecha simulada: las fotos de stock y reposiciones de la tabla están alrededor de este día
+  function hoyLima() { // fecha real de hoy en Lima, AAAA-MM-DD
+    try { var d = new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" }); if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d; } catch (e) {}
+    return new Date().toISOString().slice(0, 10);
+  }
+  var FECHA_DEMO = hoyLima(); // la fecha del sistema arranca siempre en el día de hoy (se puede cambiar a mano)
 
   function $(s, r) { return (r || document).querySelector(s); }
   function h(tag, attrs) {
@@ -25,8 +29,9 @@
     emit: function (ev, d) {
       if (ev === "msg") pintarMsg(d);
       else if (ev === "escribiendo") escribiendo(d);
-      else if (ev === "cliente") { $("#cliente").value = d; }
-      else if (ev === "tareas") { pintarBandeja(); pintarEstado(); }
+      else if (ev === "clientes_extra") { armarSelect(d); if (pestanaClientesAbierta()) cargarClientes(); }
+      else if (ev === "cliente") { clienteActual = d; $("#cliente").value = d; }
+      else if (ev === "tareas") { pintarBandeja(); pintarEstado(); if (pestanaClientesAbierta()) cargarClientes(); }
       else if (ev === "traza") pintarTraza();
       else if (ev === "erp") pintarERP();
       else if (ev === "todo") { limpiar($("#msgs")); limpiar($("#chips")); pintarBandeja(); pintarTraza(); pintarERP(); pintarEstado(); }
@@ -74,7 +79,7 @@
           h("div", { class: "kv" }, h("span", null, "Cajas"), h("b", null, b.cajas)), h("div", { class: "kv" }, h("span", null, "Total con IGV"), h("b", null, U.soles(b.total))),
           b.entregas.map(function (e) { return h("div", { class: "kv" }, h("span", null, "Entrega"), h("b", null, e.fecha + " · " + e.cajas + " cajas")); }),
           h("small", null, "ID simulado: el pedido real lo emitiría el ERP."));
-      case "catalogo": return h("div", { class: "cat" }, b.items.map(function (i) { return h("div", null, h("span", null, i.nombre, h("small", null, i.presentacion)), h("b", null, U.soles(i.precio))); }));
+      case "catalogo": return h("div", { class: "cat" }, b.items.map(function (i) { return h("div", null, h("span", null, i.nombre, h("small", null, i.presentacion), i.nota ? h("small", { class: "nota-cat" }, i.nota) : null), h("b", null, U.soles(i.precio))); }));
     }
     return null;
   }
@@ -186,8 +191,8 @@
     { t: "Pedir otro descuento después de cotizar", d: "Cada descuento nuevo es una versión nueva con su propia validación.", c: "CLI-001", m: "Quiero 150 cajas de leche UHT entera", p: "Después escriba: «¿me puede dar 9 % de descuento?»" },
     { t: "Descuento fuera de política (12 %)", d: "Sobre 10 % nadie lo autoriza: ofrece lo máximo permitido.", c: "CLI-001", m: "Quiero 100 cajas de leche UHT entera con 12 % de descuento", p: "Pruebe el botón «Solicitar 10 %»." },
     { t: "Crédito insuficiente", d: "El total supera el crédito disponible: escala a Finanzas.", c: "CLI-102", m: "Quiero 50 cajas de leche UHT entera", p: "Confirme y luego resuelva en Bandeja interna." },
-    { t: "Falta stock, hay reposición sustentada", d: "Propone entrega en dos momentos; sin aceptación no hay pedido.", c: "CLI-001", m: "Necesito 60 cajas de leche evaporada para pasado mañana", p: "Acepte o rechace la entrega en dos momentos." },
-    { t: "Falta stock, sin fecha sustentada", d: "El agente no inventa fechas: ofrece lo disponible o consulta a Planeamiento.", c: "CLI-001", m: "Necesito 100 cajas de leche evaporada", p: "Pruebe «Pedir solo lo disponible»." },
+    { t: "Falta stock, hay reposición sustentada", d: "Propone entrega en dos momentos; sin aceptación no hay pedido.", c: "CLI-001", m: "Necesito 60 cajas de leche evaporada normal para pasado mañana", p: "Acepte o rechace la entrega en dos momentos." },
+    { t: "Falta stock, sin fecha sustentada", d: "El agente no inventa fechas: ofrece lo disponible o consulta a Planeamiento.", c: "CLI-001", m: "Necesito 100 cajas de leche evaporada normal", p: "Pruebe «Pedir solo lo disponible»." },
     { t: "Cliente no habilitado en el ERP", d: "Cotiza como referencia y pide el alta a Datos maestros.", c: "CLI-002", m: "Quiero 10 cajas de leche UHT entera", p: "Habilite al cliente en Bandeja interna." },
     { t: "Producto ambiguo y producto sin costeo", d: "Pregunta cuál presentación y no cotiza lo que no tiene precio revisado.", c: "CLI-001", m: "Quiero 50 cajas de leche UHT", p: "Luego pruebe «yogurt vainilla»." }
   ];
@@ -200,7 +205,7 @@
     });
   }
   function probar(e) {
-    $("#cliente").value = e.c; fecha = FECHA_DEMO; $("#fecha").value = fecha;
+    $("#cliente").value = e.c; clienteActual = e.c; fecha = FECHA_DEMO; $("#fecha").value = fecha;
     A.reiniciar(e.c).then(function () { setTimeout(function () { enviar(e.m); }, 400); });
   }
 
@@ -238,18 +243,74 @@
     c.appendChild(h("div", { class: "doc" }, h("h3", null, "Supuestos"), h("ul", null,
       h("li", null, "Datos sintéticos del caso académico (productos, clientes, lotes y aprobaciones de ejemplo), guardados en una base de datos (Supabase). Cada visitante tiene su propia sesión de prueba, aislada de las demás."),
       h("li", null, "Las decisiones de Jefatura, Finanzas, Planeamiento y Datos maestros las simula quien opera la demostración."),
-      h("li", null, "La fecha del sistema está fijada en 10/11/2026 para que el stock y las reposiciones del caso den resultados reproducibles; se puede cambiar arriba."))));
+      h("li", null, "La fecha del sistema arranca en el día de hoy y se puede cambiar arriba. Los clientes nuevos se crean como potenciales (sin habilitar en el ERP) y se guardan en la base de datos."))));
+  }
+
+  // ---------------------------------------------------------------- pestaña Clientes (vista CRM)
+  var listaClientes = [];
+  function pintarClientes() {
+    var f = $("#cli_filtro").value, cont = limpiar($("#cli_lista"));
+    var ver = listaClientes.filter(function (c) {
+      return f === "leads" ? !c.habilitado : f === "activos" ? c.habilitado : f === "nuevos" ? c.nuevo : true;
+    });
+    $("#cli_total").textContent = ver.length + " de " + listaClientes.length + " clientes";
+    if (!ver.length) { cont.appendChild(h("div", { class: "vacio" }, "No hay clientes con ese filtro.")); return; }
+    var fila = function (c) {
+      return h("tr", null,
+        h("td", null, h("b", null, c.nombre), c.nuevo ? h("span", { class: "etq nvo" }, "nuevo") : null, h("small", null, c.id + " · " + c.razon)),
+        h("td", null, c.canal || "—", h("small", null, c.distrito || "")),
+        h("td", null, h("span", { class: "etq " + (c.habilitado ? "act" : "lead") }, c.habilitado ? "Cliente activo" : "Lead"), h("small", null, c.estado || "")),
+        h("td", null, c.habilitado ? "Sí" : "No"),
+        h("td", { class: "num" }, c.habilitado ? A.utiles.soles(c.linea) : "—"),
+        h("td", { class: "num" }, String(c.compras)));
+    };
+    cont.appendChild(h("table", { class: "cli-tabla" },
+      h("thead", null, h("tr", null, h("th", null, "Cliente"), h("th", null, "Canal"), h("th", null, "Situación"), h("th", null, "Habilitado ERP"), h("th", { class: "num" }, "Línea de crédito"), h("th", { class: "num" }, "Compras previas"))),
+      h("tbody", null, ver.map(fila))));
+  }
+  function cargarClientes() {
+    $("#cli_total").textContent = "Cargando…";
+    A.clientes().then(function (l) { listaClientes = l; pintarClientes(); }, function () { $("#cli_total").textContent = "No se pudo leer la lista de clientes."; });
+  }
+  function pestanaClientesAbierta() { return $("#pane-clientes").classList.contains("on"); }
+
+  // ---------------------------------------------------------------- clientes
+  var clienteActual = "CLI-001";
+  function armarSelect(extras) { // clientes del caso + los creados en esta sesión + la opción de crear uno nuevo
+    var sel = $("#cliente"), actual = clienteActual;
+    while (sel.firstChild) sel.removeChild(sel.firstChild);
+    EMB.tablas.clientes.concat(extras || []).forEach(function (c) {
+      sel.appendChild(h("option", { value: c.id_cliente }, c.nombre_comercial + " · " + c.id_cliente + (String(c.habilitado_erp).toUpperCase() === "SI" ? "" : " (no habilitado)")));
+    });
+    sel.appendChild(h("option", { value: "__nuevo__" }, "＋ Nuevo cliente…"));
+    sel.value = actual;
+  }
+  function abrirNuevoCliente() {
+    ["#nc_nombre", "#nc_razon", "#nc_distrito"].forEach(function (k) { $(k).value = ""; });
+    $("#nc_canal").selectedIndex = 0; $("#nc_msg").textContent = ""; $("#modalcli").hidden = false; $("#nc_nombre").focus();
   }
 
   // ---------------------------------------------------------------- arranque
   function iniciar() {
-    EMB.tablas.clientes.forEach(function (c) {
-      $("#cliente").appendChild(h("option", { value: c.id_cliente }, c.nombre_comercial + " · " + c.id_cliente + (String(c.habilitado_erp).toUpperCase() === "SI" ? "" : " (no habilitado)")));
+    armarSelect([]);
+    $("#cliente").addEventListener("change", function () {
+      if (this.value === "__nuevo__") { this.value = clienteActual; abrirNuevoCliente(); return; }
+      clienteActual = this.value; A.setCliente(this.value);
     });
-    $("#cliente").addEventListener("change", function () { A.setCliente(this.value); });
+    $("#cli_filtro").addEventListener("change", pintarClientes);
+    $("#cli_actualizar").addEventListener("click", cargarClientes);
+    $("#nc_cancelar").addEventListener("click", function () { $("#modalcli").hidden = true; });
+    $("#nc_crear").addEventListener("click", function () {
+      var nombre = $("#nc_nombre").value.trim();
+      if (nombre.length < 2) { $("#nc_msg").textContent = "Escriba el nombre comercial."; return; }
+      $("#nc_crear").disabled = true; $("#nc_msg").textContent = "";
+      A.nuevoCliente({ nombre_comercial: nombre, razon_social: $("#nc_razon").value.trim(), canal: $("#nc_canal").value, distrito: $("#nc_distrito").value.trim() })
+        .then(function () { $("#modalcli").hidden = true; }, function (e) { $("#nc_msg").textContent = (e && e.message) || "No se pudo crear el cliente."; })
+        .then(function () { $("#nc_crear").disabled = false; });
+    });
     $("#fecha").value = fecha;
     $("#fecha").addEventListener("change", function () { if (/^\d{4}-\d{2}-\d{2}$/.test(this.value)) fecha = this.value; });
-    $("#reiniciar").addEventListener("click", function () { A.reiniciar($("#cliente").value); });
+    $("#reiniciar").addEventListener("click", function () { A.reiniciar(clienteActual); });
     $("#csv").addEventListener("click", function () { $("#csvtxt").value = "Cargando…"; $("#csvmsg").textContent = ""; $("#modal").hidden = false; A.csv().then(function (t) { $("#csvtxt").value = t; }); });
     $("#csvcerrar").addEventListener("click", function () { $("#modal").hidden = true; });
     $("#csvcopiar").addEventListener("click", function () {
@@ -261,6 +322,7 @@
       b.addEventListener("click", function () {
         Array.prototype.forEach.call(document.querySelectorAll(".tabs button"), function (x) { x.classList.toggle("on", x === b); });
         Array.prototype.forEach.call(document.querySelectorAll(".pane"), function (p) { p.classList.toggle("on", p.id === "pane-" + b.dataset.t); });
+        if (b.dataset.t === "clientes") cargarClientes();
       });
     });
     pintarBandeja(); pintarTraza(); pintarERP(); pintarEscenarios(); pintarDoc(); pintarEstado();

@@ -28,7 +28,7 @@
 
   window.ChatAgenteApi = {
     crear: function (opts) {
-      var emitExterno = opts.emit || function () {}, base = opts.base || "", getFecha = opts.fecha || function () { return "2026-11-10"; };
+      var emitExterno = opts.emit || function () {}, base = opts.base || "", getFecha = opts.fecha || function () { return new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" }); };
       var sid = sesionId(), cliente = opts.cliente || "CLI-001", vista = VISTA_VACIA();
       var ultimoSeq = 0, ultimoRev = -1, cola = Promise.resolve(), ocupado = 0, pendCli = 0, gen = 0;
 
@@ -57,6 +57,7 @@
 
       // Reproduce los mensajes nuevos (con la animación de "escribiendo…") y después actualiza los paneles.
       function aplicar(j, conAnimacion) {
+        if (j.clientes_extra) emit("clientes_extra", j.clientes_extra);
         var miGen = gen, nuevos = (j.nuevos || []).slice().sort(function (a, b) { return a.seq - b.seq; });
         var p = Promise.resolve();
         nuevos.forEach(function (m) {
@@ -114,6 +115,11 @@
             return llamar({ op: "iniciar", desde: 0 }).then(function (j) { return aplicar(j, false); }).catch(falla);
           });
         },
+        nuevoCliente: function (datos) { // crea un cliente (lead) solo para esta sesión y entra como él; si falla, se restaura la conversación
+          reiniciarLocal();
+          return enColaCon(function () { return llamar({ op: "nuevo_cliente", nuevo: datos, desde: 0 }).then(function (j) { return aplicar(j, true); }); })
+            .catch(function (e) { API.saludar(); throw e; });
+        },
         setCliente: function (id) {
           cliente = id; reiniciarLocal();
           return enColaCon(function () { return llamar({ op: "cliente", desde: 0 }).then(function (j) { return aplicar(j, true); }).catch(falla); });
@@ -125,6 +131,7 @@
         csv: function () {
           return pedir("/api/bitacora?sesion=" + encodeURIComponent(sid), {}).catch(function () { return null; });
         },
+        clientes: function () { return pedir("/api/clientes", {}).then(function (j) { return j.clientes || []; }); },
         estado: function () { return vista; },
         utiles: { fmtF: fmtF, fmtFL: fmtFL, soles: soles, pct: pct }
       };

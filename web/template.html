@@ -26,21 +26,29 @@
     <div class="estado" id="estado"></div>
     <div id="msgs" aria-live="polite"></div>
     <div id="chips"></div>
-    <form id="form" autocomplete="off"><input id="txt" type="text" placeholder="Escriba su pedido… (ej.: 200 cajas de evaporada para el lunes con 8 % de descuento)" aria-label="Mensaje"><button id="enviar" type="submit">Enviar</button></form>
+    <form id="form" autocomplete="off"><input id="txt" type="text" placeholder="Escriba su pedido… (ej.: 200 cajas de evaporada normal para el lunes con 8 % de descuento)" aria-label="Mensaje"><button id="enviar" type="submit">Enviar</button></form>
   </section>
   <section class="card panel" aria-label="Vista interna">
     <nav class="tabs">
       <button class="on" data-t="bandeja" type="button">Bandeja interna <span class="bd" id="bd">0</span></button>
       <button data-t="traza" type="button">Traza del agente</button>
+      <button data-t="clientes" type="button">Clientes</button>
       <button data-t="escen" type="button">Escenarios</button>
       <button data-t="doc" type="button">Cómo funciona</button>
     </nav>
     <div class="pane on" id="pane-bandeja"><div id="bandeja" style="display:flex;flex-direction:column;gap:14px"></div></div>
     <div class="pane" id="pane-traza"><h3>Controles del ERP</h3><div id="erp"></div><h3>Qué ha pasado, paso a paso</h3><div id="linea"></div></div>
+    <div class="pane" id="pane-clientes"><div class="cli-barra"><label class="fld" style="flex-direction:row;align-items:center;gap:8px">Mostrar<select id="cli_filtro"><option value="todos">Todos</option><option value="leads">Leads (sin habilitar)</option><option value="activos">Clientes activos</option><option value="nuevos">Creados en la demo</option></select></label><button class="btn az" id="cli_actualizar" type="button">Actualizar</button><span class="mini" id="cli_total"></span></div><p class="ayuda">Vista del CRM: todos los clientes de la base. Un cliente nuevo entra como lead; al habilitarlo en el ERP pasa a cliente activo.</p><div id="cli_lista"></div></div>
     <div class="pane" id="pane-escen"><div id="escen" style="display:flex;flex-direction:column;gap:12px"></div></div>
     <div class="pane" id="pane-doc"><div id="doc" style="display:flex;flex-direction:column;gap:14px"></div></div>
   </section>
 </main>
+<div id="modalcli" class="modal" hidden><div class="modal-c" style="width:min(460px,100%)"><h3>Nuevo cliente</h3><p class="mini">Se crea como cliente potencial en el CRM: todavía no está habilitado en el ERP ni tiene línea de crédito. Se guarda en la base de datos.</p>
+<label class="fld">Nombre comercial *<input id="nc_nombre" maxlength="60" autocomplete="off"></label>
+<label class="fld">Razón social<input id="nc_razon" maxlength="90" autocomplete="off" placeholder="Si lo deja vacío se usa el nombre comercial"></label>
+<label class="fld">Canal<select id="nc_canal"><option>Mayorista</option><option>Minorista</option><option>Bodega</option><option>Autoservicio</option></select></label>
+<label class="fld">Distrito<input id="nc_distrito" maxlength="40" autocomplete="off"></label>
+<div class="acc"><button class="btn az" id="nc_crear" type="button">Crear y entrar</button><button class="btn mal" id="nc_cancelar" type="button">Cancelar</button><span class="mini" id="nc_msg" style="color:var(--mal)"></span></div></div></div>
 <div id="modal" class="modal" hidden><div class="modal-c"><h3>Bitácora del agente (CSV)</h3><p class="mini">Copie el texto y péguelo en un archivo .csv o en Excel.</p><textarea id="csvtxt" readonly rows="10"></textarea><div class="acc"><button class="btn az" id="csvcopiar" type="button">Copiar</button><button class="btn mal" id="csvcerrar" type="button">Cerrar</button><span class="mini" id="csvmsg"></span></div></div></div>
 <script id="datos-embebidos" type="application/json">/*DATOS*/</script>
 <script>
