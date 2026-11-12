@@ -201,3 +201,4 @@ code { font-family: var(--mono); font-size: .86em; background: #eef2f8; padding:
 .cli-tabla small { display: block; color: var(--gris); }
 .etq { display: inline-block; border-radius: 999px; padding: 2px 8px; font-size: .68rem; font-weight: 700; }
 .etq.lead { background: #fff1d6; color: #8a5a00; } .etq.act { background: #dcf3e7; color: #0b7342; } .etq.nvo { background: #e3ecff; color: #1b4a9c; margin-left: 6px; }
+.nota-cat { color: #8a5a00 !important; font-weight: 700; }

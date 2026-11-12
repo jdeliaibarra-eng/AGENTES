@@ -209,6 +209,7 @@ code { font-family: var(--mono); font-size: .86em; background: #eef2f8; padding:
 .cli-tabla small { display: block; color: var(--gris); }
 .etq { display: inline-block; border-radius: 999px; padding: 2px 8px; font-size: .68rem; font-weight: 700; }
 .etq.lead { background: #fff1d6; color: #8a5a00; } .etq.act { background: #dcf3e7; color: #0b7342; } .etq.nvo { background: #e3ecff; color: #1b4a9c; margin-left: 6px; }
+.nota-cat { color: #8a5a00 !important; font-weight: 700; }
 
 </style>
 </head>
@@ -498,7 +499,7 @@ code { font-family: var(--mono); font-size: .86em; background: #eef2f8; padding:
           h("div", { class: "kv" }, h("span", null, "Cajas"), h("b", null, b.cajas)), h("div", { class: "kv" }, h("span", null, "Total con IGV"), h("b", null, U.soles(b.total))),
           b.entregas.map(function (e) { return h("div", { class: "kv" }, h("span", null, "Entrega"), h("b", null, e.fecha + " · " + e.cajas + " cajas")); }),
           h("small", null, "ID simulado: el pedido real lo emitiría el ERP."));
-      case "catalogo": return h("div", { class: "cat" }, b.items.map(function (i) { return h("div", null, h("span", null, i.nombre, h("small", null, i.presentacion)), h("b", null, U.soles(i.precio))); }));
+      case "catalogo": return h("div", { class: "cat" }, b.items.map(function (i) { return h("div", null, h("span", null, i.nombre, h("small", null, i.presentacion), i.nota ? h("small", { class: "nota-cat" }, i.nota) : null), h("b", null, U.soles(i.precio))); }));
     }
     return null;
   }

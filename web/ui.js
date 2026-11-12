@@ -79,7 +79,7 @@
           h("div", { class: "kv" }, h("span", null, "Cajas"), h("b", null, b.cajas)), h("div", { class: "kv" }, h("span", null, "Total con IGV"), h("b", null, U.soles(b.total))),
           b.entregas.map(function (e) { return h("div", { class: "kv" }, h("span", null, "Entrega"), h("b", null, e.fecha + " · " + e.cajas + " cajas")); }),
           h("small", null, "ID simulado: el pedido real lo emitiría el ERP."));
-      case "catalogo": return h("div", { class: "cat" }, b.items.map(function (i) { return h("div", null, h("span", null, i.nombre, h("small", null, i.presentacion)), h("b", null, U.soles(i.precio))); }));
+      case "catalogo": return h("div", { class: "cat" }, b.items.map(function (i) { return h("div", null, h("span", null, i.nombre, h("small", null, i.presentacion), i.nota ? h("small", { class: "nota-cat" }, i.nota) : null), h("b", null, U.soles(i.precio))); }));
     }
     return null;
   }
