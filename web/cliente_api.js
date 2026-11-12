@@ -131,6 +131,7 @@
         csv: function () {
           return pedir("/api/bitacora?sesion=" + encodeURIComponent(sid), {}).catch(function () { return null; });
         },
+        clientes: function () { return pedir("/api/clientes", {}).then(function (j) { return j.clientes || []; }); },
         estado: function () { return vista; },
         utiles: { fmtF: fmtF, fmtFL: fmtFL, soles: soles, pct: pct }
       };

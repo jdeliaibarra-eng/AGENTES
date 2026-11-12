@@ -201,6 +201,15 @@ code { font-family: var(--mono); font-size: .86em; background: #eef2f8; padding:
 .fld { display: flex; flex-direction: column; gap: 4px; font-size: .78rem; font-weight: 700; color: #33415c; }
 .fld input, .fld select { font: inherit; font-weight: 400; border: 1px solid #c3cde0; border-radius: 8px; padding: 8px; }
 
+.cli-barra { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cli-tabla { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #dfe5f0; border-radius: 10px; overflow: hidden; font-size: .8rem; }
+.cli-tabla th { text-align: left; font-size: .64rem; text-transform: uppercase; letter-spacing: .06em; color: var(--tinta-2); padding: 8px; background: #f0f4fb; }
+.cli-tabla td { padding: 8px; border-top: 1px solid #e8edf6; vertical-align: top; }
+.cli-tabla td.num, .cli-tabla th.num { text-align: right; white-space: nowrap; }
+.cli-tabla small { display: block; color: var(--gris); }
+.etq { display: inline-block; border-radius: 999px; padding: 2px 8px; font-size: .68rem; font-weight: 700; }
+.etq.lead { background: #fff1d6; color: #8a5a00; } .etq.act { background: #dcf3e7; color: #0b7342; } .etq.nvo { background: #e3ecff; color: #1b4a9c; margin-left: 6px; }
+
 </style>
 </head>
 <body>
@@ -226,11 +235,13 @@ code { font-family: var(--mono); font-size: .86em; background: #eef2f8; padding:
     <nav class="tabs">
       <button class="on" data-t="bandeja" type="button">Bandeja interna <span class="bd" id="bd">0</span></button>
       <button data-t="traza" type="button">Traza del agente</button>
+      <button data-t="clientes" type="button">Clientes</button>
       <button data-t="escen" type="button">Escenarios</button>
       <button data-t="doc" type="button">Cómo funciona</button>
     </nav>
     <div class="pane on" id="pane-bandeja"><div id="bandeja" style="display:flex;flex-direction:column;gap:14px"></div></div>
     <div class="pane" id="pane-traza"><h3>Controles del ERP</h3><div id="erp"></div><h3>Qué ha pasado, paso a paso</h3><div id="linea"></div></div>
+    <div class="pane" id="pane-clientes"><div class="cli-barra"><label class="fld" style="flex-direction:row;align-items:center;gap:8px">Mostrar<select id="cli_filtro"><option value="todos">Todos</option><option value="leads">Leads (sin habilitar)</option><option value="activos">Clientes activos</option><option value="nuevos">Creados en la demo</option></select></label><button class="btn az" id="cli_actualizar" type="button">Actualizar</button><span class="mini" id="cli_total"></span></div><p class="ayuda">Vista del CRM: todos los clientes de la base. Un cliente nuevo entra como lead; al habilitarlo en el ERP pasa a cliente activo.</p><div id="cli_lista"></div></div>
     <div class="pane" id="pane-escen"><div id="escen" style="display:flex;flex-direction:column;gap:12px"></div></div>
     <div class="pane" id="pane-doc"><div id="doc" style="display:flex;flex-direction:column;gap:14px"></div></div>
   </section>
@@ -377,6 +388,7 @@ code { font-family: var(--mono); font-size: .86em; background: #eef2f8; padding:
         csv: function () {
           return pedir("/api/bitacora?sesion=" + encodeURIComponent(sid), {}).catch(function () { return null; });
         },
+        clientes: function () { return pedir("/api/clientes", {}).then(function (j) { return j.clientes || []; }); },
         estado: function () { return vista; },
         utiles: { fmtF: fmtF, fmtFL: fmtFL, soles: soles, pct: pct }
       };
@@ -436,9 +448,9 @@ code { font-family: var(--mono); font-size: .86em; background: #eef2f8; padding:
     emit: function (ev, d) {
       if (ev === "msg") pintarMsg(d);
       else if (ev === "escribiendo") escribiendo(d);
-      else if (ev === "clientes_extra") { armarSelect(d); }
+      else if (ev === "clientes_extra") { armarSelect(d); if (pestanaClientesAbierta()) cargarClientes(); }
       else if (ev === "cliente") { clienteActual = d; $("#cliente").value = d; }
-      else if (ev === "tareas") { pintarBandeja(); pintarEstado(); }
+      else if (ev === "tareas") { pintarBandeja(); pintarEstado(); if (pestanaClientesAbierta()) cargarClientes(); }
       else if (ev === "traza") pintarTraza();
       else if (ev === "erp") pintarERP();
       else if (ev === "todo") { limpiar($("#msgs")); limpiar($("#chips")); pintarBandeja(); pintarTraza(); pintarERP(); pintarEstado(); }
@@ -653,6 +665,34 @@ code { font-family: var(--mono); font-size: .86em; background: #eef2f8; padding:
       h("li", null, "La fecha del sistema arranca en el día de hoy y se puede cambiar arriba. Los clientes nuevos se crean como potenciales (sin habilitar en el ERP) y se guardan en la base de datos."))));
   }
 
+  // ---------------------------------------------------------------- pestaña Clientes (vista CRM)
+  var listaClientes = [];
+  function pintarClientes() {
+    var f = $("#cli_filtro").value, cont = limpiar($("#cli_lista"));
+    var ver = listaClientes.filter(function (c) {
+      return f === "leads" ? !c.habilitado : f === "activos" ? c.habilitado : f === "nuevos" ? c.nuevo : true;
+    });
+    $("#cli_total").textContent = ver.length + " de " + listaClientes.length + " clientes";
+    if (!ver.length) { cont.appendChild(h("div", { class: "vacio" }, "No hay clientes con ese filtro.")); return; }
+    var fila = function (c) {
+      return h("tr", null,
+        h("td", null, h("b", null, c.nombre), c.nuevo ? h("span", { class: "etq nvo" }, "nuevo") : null, h("small", null, c.id + " · " + c.razon)),
+        h("td", null, c.canal || "—", h("small", null, c.distrito || "")),
+        h("td", null, h("span", { class: "etq " + (c.habilitado ? "act" : "lead") }, c.habilitado ? "Cliente activo" : "Lead"), h("small", null, c.estado || "")),
+        h("td", null, c.habilitado ? "Sí" : "No"),
+        h("td", { class: "num" }, c.habilitado ? A.utiles.soles(c.linea) : "—"),
+        h("td", { class: "num" }, String(c.compras)));
+    };
+    cont.appendChild(h("table", { class: "cli-tabla" },
+      h("thead", null, h("tr", null, h("th", null, "Cliente"), h("th", null, "Canal"), h("th", null, "Situación"), h("th", null, "Habilitado ERP"), h("th", { class: "num" }, "Línea de crédito"), h("th", { class: "num" }, "Compras previas"))),
+      h("tbody", null, ver.map(fila))));
+  }
+  function cargarClientes() {
+    $("#cli_total").textContent = "Cargando…";
+    A.clientes().then(function (l) { listaClientes = l; pintarClientes(); }, function () { $("#cli_total").textContent = "No se pudo leer la lista de clientes."; });
+  }
+  function pestanaClientesAbierta() { return $("#pane-clientes").classList.contains("on"); }
+
   // ---------------------------------------------------------------- clientes
   var clienteActual = "CLI-001";
   function armarSelect(extras) { // clientes del caso + los creados en esta sesión + la opción de crear uno nuevo
@@ -676,6 +716,8 @@ code { font-family: var(--mono); font-size: .86em; background: #eef2f8; padding:
       if (this.value === "__nuevo__") { this.value = clienteActual; abrirNuevoCliente(); return; }
       clienteActual = this.value; A.setCliente(this.value);
     });
+    $("#cli_filtro").addEventListener("change", pintarClientes);
+    $("#cli_actualizar").addEventListener("click", cargarClientes);
     $("#nc_cancelar").addEventListener("click", function () { $("#modalcli").hidden = true; });
     $("#nc_crear").addEventListener("click", function () {
       var nombre = $("#nc_nombre").value.trim();
@@ -699,6 +741,7 @@ code { font-family: var(--mono); font-size: .86em; background: #eef2f8; padding:
       b.addEventListener("click", function () {
         Array.prototype.forEach.call(document.querySelectorAll(".tabs button"), function (x) { x.classList.toggle("on", x === b); });
         Array.prototype.forEach.call(document.querySelectorAll(".pane"), function (p) { p.classList.toggle("on", p.id === "pane-" + b.dataset.t); });
+        if (b.dataset.t === "clientes") cargarClientes();
       });
     });
     pintarBandeja(); pintarTraza(); pintarERP(); pintarEscenarios(); pintarDoc(); pintarEstado();

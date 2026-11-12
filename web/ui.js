@@ -29,9 +29,9 @@
     emit: function (ev, d) {
       if (ev === "msg") pintarMsg(d);
       else if (ev === "escribiendo") escribiendo(d);
-      else if (ev === "clientes_extra") { armarSelect(d); }
+      else if (ev === "clientes_extra") { armarSelect(d); if (pestanaClientesAbierta()) cargarClientes(); }
       else if (ev === "cliente") { clienteActual = d; $("#cliente").value = d; }
-      else if (ev === "tareas") { pintarBandeja(); pintarEstado(); }
+      else if (ev === "tareas") { pintarBandeja(); pintarEstado(); if (pestanaClientesAbierta()) cargarClientes(); }
       else if (ev === "traza") pintarTraza();
       else if (ev === "erp") pintarERP();
       else if (ev === "todo") { limpiar($("#msgs")); limpiar($("#chips")); pintarBandeja(); pintarTraza(); pintarERP(); pintarEstado(); }
@@ -246,6 +246,34 @@
       h("li", null, "La fecha del sistema arranca en el día de hoy y se puede cambiar arriba. Los clientes nuevos se crean como potenciales (sin habilitar en el ERP) y se guardan en la base de datos."))));
   }
 
+  // ---------------------------------------------------------------- pestaña Clientes (vista CRM)
+  var listaClientes = [];
+  function pintarClientes() {
+    var f = $("#cli_filtro").value, cont = limpiar($("#cli_lista"));
+    var ver = listaClientes.filter(function (c) {
+      return f === "leads" ? !c.habilitado : f === "activos" ? c.habilitado : f === "nuevos" ? c.nuevo : true;
+    });
+    $("#cli_total").textContent = ver.length + " de " + listaClientes.length + " clientes";
+    if (!ver.length) { cont.appendChild(h("div", { class: "vacio" }, "No hay clientes con ese filtro.")); return; }
+    var fila = function (c) {
+      return h("tr", null,
+        h("td", null, h("b", null, c.nombre), c.nuevo ? h("span", { class: "etq nvo" }, "nuevo") : null, h("small", null, c.id + " · " + c.razon)),
+        h("td", null, c.canal || "—", h("small", null, c.distrito || "")),
+        h("td", null, h("span", { class: "etq " + (c.habilitado ? "act" : "lead") }, c.habilitado ? "Cliente activo" : "Lead"), h("small", null, c.estado || "")),
+        h("td", null, c.habilitado ? "Sí" : "No"),
+        h("td", { class: "num" }, c.habilitado ? A.utiles.soles(c.linea) : "—"),
+        h("td", { class: "num" }, String(c.compras)));
+    };
+    cont.appendChild(h("table", { class: "cli-tabla" },
+      h("thead", null, h("tr", null, h("th", null, "Cliente"), h("th", null, "Canal"), h("th", null, "Situación"), h("th", null, "Habilitado ERP"), h("th", { class: "num" }, "Línea de crédito"), h("th", { class: "num" }, "Compras previas"))),
+      h("tbody", null, ver.map(fila))));
+  }
+  function cargarClientes() {
+    $("#cli_total").textContent = "Cargando…";
+    A.clientes().then(function (l) { listaClientes = l; pintarClientes(); }, function () { $("#cli_total").textContent = "No se pudo leer la lista de clientes."; });
+  }
+  function pestanaClientesAbierta() { return $("#pane-clientes").classList.contains("on"); }
+
   // ---------------------------------------------------------------- clientes
   var clienteActual = "CLI-001";
   function armarSelect(extras) { // clientes del caso + los creados en esta sesión + la opción de crear uno nuevo
@@ -269,6 +297,8 @@
       if (this.value === "__nuevo__") { this.value = clienteActual; abrirNuevoCliente(); return; }
       clienteActual = this.value; A.setCliente(this.value);
     });
+    $("#cli_filtro").addEventListener("change", pintarClientes);
+    $("#cli_actualizar").addEventListener("click", cargarClientes);
     $("#nc_cancelar").addEventListener("click", function () { $("#modalcli").hidden = true; });
     $("#nc_crear").addEventListener("click", function () {
       var nombre = $("#nc_nombre").value.trim();
@@ -292,6 +322,7 @@
       b.addEventListener("click", function () {
         Array.prototype.forEach.call(document.querySelectorAll(".tabs button"), function (x) { x.classList.toggle("on", x === b); });
         Array.prototype.forEach.call(document.querySelectorAll(".pane"), function (p) { p.classList.toggle("on", p.id === "pane-" + b.dataset.t); });
+        if (b.dataset.t === "clientes") cargarClientes();
       });
     });
     pintarBandeja(); pintarTraza(); pintarERP(); pintarEscenarios(); pintarDoc(); pintarEstado();

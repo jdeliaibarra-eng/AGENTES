@@ -32,11 +32,13 @@
     <nav class="tabs">
       <button class="on" data-t="bandeja" type="button">Bandeja interna <span class="bd" id="bd">0</span></button>
       <button data-t="traza" type="button">Traza del agente</button>
+      <button data-t="clientes" type="button">Clientes</button>
       <button data-t="escen" type="button">Escenarios</button>
       <button data-t="doc" type="button">Cómo funciona</button>
     </nav>
     <div class="pane on" id="pane-bandeja"><div id="bandeja" style="display:flex;flex-direction:column;gap:14px"></div></div>
     <div class="pane" id="pane-traza"><h3>Controles del ERP</h3><div id="erp"></div><h3>Qué ha pasado, paso a paso</h3><div id="linea"></div></div>
+    <div class="pane" id="pane-clientes"><div class="cli-barra"><label class="fld" style="flex-direction:row;align-items:center;gap:8px">Mostrar<select id="cli_filtro"><option value="todos">Todos</option><option value="leads">Leads (sin habilitar)</option><option value="activos">Clientes activos</option><option value="nuevos">Creados en la demo</option></select></label><button class="btn az" id="cli_actualizar" type="button">Actualizar</button><span class="mini" id="cli_total"></span></div><p class="ayuda">Vista del CRM: todos los clientes de la base. Un cliente nuevo entra como lead; al habilitarlo en el ERP pasa a cliente activo.</p><div id="cli_lista"></div></div>
     <div class="pane" id="pane-escen"><div id="escen" style="display:flex;flex-direction:column;gap:12px"></div></div>
     <div class="pane" id="pane-doc"><div id="doc" style="display:flex;flex-direction:column;gap:14px"></div></div>
   </section>
