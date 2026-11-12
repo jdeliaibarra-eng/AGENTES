@@ -57,9 +57,12 @@ Por defecto el agente interpreta los mensajes con reglas. Si define una clave en
 |---|---|---|
 | `GEMINI_API_KEY` | una de las dos | Clave de Google AI Studio (aistudio.google.com/apikey). Tiene capa gratuita, sin tarjeta. Si está definida, se usa Gemini. |
 | `ANTHROPIC_API_KEY` | una de las dos | Clave de la API de Anthropic (de pago por uso). Solo se usa si no hay `GEMINI_API_KEY`. |
-| `LLM_MODEL` | no | Modelo a usar. Por defecto `gemini-2.5-flash-lite` (Gemini) o `claude-haiku-5-5` (Anthropic). Confirme en AI Studio qué modelos tiene su capa gratuita. |
+| `LLM_MODEL` | no | Modelo a usar. Por defecto `gemini-3.5-flash-lite` (Gemini) o `claude-haiku-5-5` (Anthropic). Los modelos disponibles cambian por cuenta: si da error 404, pruebe otro de la lista de su AI Studio. Escríbalo sin espacios ni guiones al final. |
+| `LLM_TIMEOUT_MS` | no | Tiempo máximo de espera al modelo. Por defecto 20000 (20 s). |
+| `LLM_THINKING` | no | Nivel de razonamiento de los modelos Gemini 3 (`minimal`, `low`, `medium`). Por defecto `low`. |
 | `LLM_MAX_POR_SESION` | no | Tope de llamadas al modelo por visitante. Por defecto 60. |
 
+- Para saber si el modelo respondió, abra la pestaña **Traza del agente**: la línea «Interpreta el mensaje con…» dice «modelo de lenguaje» o «reglas» (y, si fueron reglas, el motivo).
 - El modelo **solo traduce**. Precio, descuento autorizado, stock y crédito los sigue decidiendo el motor, y todo lo que devuelve el modelo se valida contra el catálogo (`sanear()` en `lib/core.js`).
 - Sin clave, con error de red, con límite de cuota agotado (error 429) o si el modelo no entiende, se usa el intérprete por reglas: el agente nunca se queda sin responder.
 - En la capa gratuita de Gemini, Google puede usar los mensajes enviados para mejorar sus productos. Aquí todo son datos ficticios; no escriba datos reales de clientes.

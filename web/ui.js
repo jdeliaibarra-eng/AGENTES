@@ -7,6 +7,7 @@
     return new Date().toISOString().slice(0, 10);
   }
   var FECHA_DEMO = hoyLima(); // la fecha del sistema arranca siempre en el día de hoy (se puede cambiar a mano)
+  var FECHA_CASO = "2026-11-10"; // fecha de la foto de stock del caso: los escenarios la usan para dar siempre el mismo resultado
 
   function $(s, r) { return (r || document).querySelector(s); }
   function h(tag, attrs) {
@@ -205,7 +206,7 @@
     });
   }
   function probar(e) {
-    $("#cliente").value = e.c; clienteActual = e.c; fecha = FECHA_DEMO; $("#fecha").value = fecha;
+    $("#cliente").value = e.c; clienteActual = e.c; fecha = FECHA_CASO; $("#fecha").value = fecha;
     A.reiniciar(e.c).then(function () { setTimeout(function () { enviar(e.m); }, 400); });
   }
 
