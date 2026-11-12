@@ -29,7 +29,8 @@
     emit: function (ev, d) {
       if (ev === "msg") pintarMsg(d);
       else if (ev === "escribiendo") escribiendo(d);
-      else if (ev === "cliente") { $("#cliente").value = d; }
+      else if (ev === "clientes_extra") { armarSelect(d); }
+      else if (ev === "cliente") { clienteActual = d; $("#cliente").value = d; }
       else if (ev === "tareas") { pintarBandeja(); pintarEstado(); }
       else if (ev === "traza") pintarTraza();
       else if (ev === "erp") pintarERP();
@@ -204,7 +205,7 @@
     });
   }
   function probar(e) {
-    $("#cliente").value = e.c; fecha = FECHA_DEMO; $("#fecha").value = fecha;
+    $("#cliente").value = e.c; clienteActual = e.c; fecha = FECHA_DEMO; $("#fecha").value = fecha;
     A.reiniciar(e.c).then(function () { setTimeout(function () { enviar(e.m); }, 400); });
   }
 
@@ -242,18 +243,44 @@
     c.appendChild(h("div", { class: "doc" }, h("h3", null, "Supuestos"), h("ul", null,
       h("li", null, "Datos sintéticos del caso académico (productos, clientes, lotes y aprobaciones de ejemplo), guardados en una base de datos (Supabase). Cada visitante tiene su propia sesión de prueba, aislada de las demás."),
       h("li", null, "Las decisiones de Jefatura, Finanzas, Planeamiento y Datos maestros las simula quien opera la demostración."),
-      h("li", null, "La fecha del sistema está fijada en 10/11/2026 para que el stock y las reposiciones del caso den resultados reproducibles; se puede cambiar arriba."))));
+      h("li", null, "La fecha del sistema arranca en el día de hoy y se puede cambiar arriba. Los clientes nuevos se crean como potenciales (sin habilitar en el ERP) y viven solo en su sesión."))));
+  }
+
+  // ---------------------------------------------------------------- clientes
+  var clienteActual = "CLI-001";
+  function armarSelect(extras) { // clientes del caso + los creados en esta sesión + la opción de crear uno nuevo
+    var sel = $("#cliente"), actual = clienteActual;
+    while (sel.firstChild) sel.removeChild(sel.firstChild);
+    EMB.tablas.clientes.concat(extras || []).forEach(function (c) {
+      sel.appendChild(h("option", { value: c.id_cliente }, c.nombre_comercial + " · " + c.id_cliente + (String(c.habilitado_erp).toUpperCase() === "SI" ? "" : " (no habilitado)")));
+    });
+    sel.appendChild(h("option", { value: "__nuevo__" }, "＋ Nuevo cliente…"));
+    sel.value = actual;
+  }
+  function abrirNuevoCliente() {
+    ["#nc_nombre", "#nc_razon", "#nc_distrito"].forEach(function (k) { $(k).value = ""; });
+    $("#nc_canal").selectedIndex = 0; $("#nc_msg").textContent = ""; $("#modalcli").hidden = false; $("#nc_nombre").focus();
   }
 
   // ---------------------------------------------------------------- arranque
   function iniciar() {
-    EMB.tablas.clientes.forEach(function (c) {
-      $("#cliente").appendChild(h("option", { value: c.id_cliente }, c.nombre_comercial + " · " + c.id_cliente + (String(c.habilitado_erp).toUpperCase() === "SI" ? "" : " (no habilitado)")));
+    armarSelect([]);
+    $("#cliente").addEventListener("change", function () {
+      if (this.value === "__nuevo__") { this.value = clienteActual; abrirNuevoCliente(); return; }
+      clienteActual = this.value; A.setCliente(this.value);
     });
-    $("#cliente").addEventListener("change", function () { A.setCliente(this.value); });
+    $("#nc_cancelar").addEventListener("click", function () { $("#modalcli").hidden = true; });
+    $("#nc_crear").addEventListener("click", function () {
+      var nombre = $("#nc_nombre").value.trim();
+      if (nombre.length < 2) { $("#nc_msg").textContent = "Escriba el nombre comercial."; return; }
+      $("#nc_crear").disabled = true; $("#nc_msg").textContent = "";
+      A.nuevoCliente({ nombre_comercial: nombre, razon_social: $("#nc_razon").value.trim(), canal: $("#nc_canal").value, distrito: $("#nc_distrito").value.trim() })
+        .then(function () { $("#modalcli").hidden = true; }, function (e) { $("#nc_msg").textContent = (e && e.message) || "No se pudo crear el cliente."; })
+        .then(function () { $("#nc_crear").disabled = false; });
+    });
     $("#fecha").value = fecha;
     $("#fecha").addEventListener("change", function () { if (/^\d{4}-\d{2}-\d{2}$/.test(this.value)) fecha = this.value; });
-    $("#reiniciar").addEventListener("click", function () { A.reiniciar($("#cliente").value); });
+    $("#reiniciar").addEventListener("click", function () { A.reiniciar(clienteActual); });
     $("#csv").addEventListener("click", function () { $("#csvtxt").value = "Cargando…"; $("#csvmsg").textContent = ""; $("#modal").hidden = false; A.csv().then(function (t) { $("#csvtxt").value = t; }); });
     $("#csvcerrar").addEventListener("click", function () { $("#modal").hidden = true; });
     $("#csvcopiar").addEventListener("click", function () {

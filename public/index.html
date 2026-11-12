@@ -198,6 +198,9 @@ code { font-family: var(--mono); font-size: .86em; background: #eef2f8; padding:
 .modal-c { background: #fff; border-radius: 14px; padding: 18px; width: min(720px, 100%); display: flex; flex-direction: column; gap: 10px; box-shadow: var(--sombra); }
 .modal-c textarea { width: 100%; font: .78rem/1.4 var(--mono); border: 1px solid #c3cde0; border-radius: 8px; padding: 8px; resize: vertical; }
 
+.fld { display: flex; flex-direction: column; gap: 4px; font-size: .78rem; font-weight: 700; color: #33415c; }
+.fld input, .fld select { font: inherit; font-weight: 400; border: 1px solid #c3cde0; border-radius: 8px; padding: 8px; }
+
 </style>
 </head>
 <body>
@@ -232,6 +235,12 @@ code { font-family: var(--mono); font-size: .86em; background: #eef2f8; padding:
     <div class="pane" id="pane-doc"><div id="doc" style="display:flex;flex-direction:column;gap:14px"></div></div>
   </section>
 </main>
+<div id="modalcli" class="modal" hidden><div class="modal-c" style="width:min(460px,100%)"><h3>Nuevo cliente</h3><p class="mini">Se crea como cliente potencial en el CRM: todavía no está habilitado en el ERP ni tiene línea de crédito. Vive solo en su sesión.</p>
+<label class="fld">Nombre comercial *<input id="nc_nombre" maxlength="60" autocomplete="off"></label>
+<label class="fld">Razón social<input id="nc_razon" maxlength="90" autocomplete="off" placeholder="Si lo deja vacío se usa el nombre comercial"></label>
+<label class="fld">Canal<select id="nc_canal"><option>Mayorista</option><option>Minorista</option><option>Bodega</option><option>Autoservicio</option></select></label>
+<label class="fld">Distrito<input id="nc_distrito" maxlength="40" autocomplete="off"></label>
+<div class="acc"><button class="btn az" id="nc_crear" type="button">Crear y entrar</button><button class="btn mal" id="nc_cancelar" type="button">Cancelar</button><span class="mini" id="nc_msg" style="color:var(--mal)"></span></div></div></div>
 <div id="modal" class="modal" hidden><div class="modal-c"><h3>Bitácora del agente (CSV)</h3><p class="mini">Copie el texto y péguelo en un archivo .csv o en Excel.</p><textarea id="csvtxt" readonly rows="10"></textarea><div class="acc"><button class="btn az" id="csvcopiar" type="button">Copiar</button><button class="btn mal" id="csvcerrar" type="button">Cerrar</button><span class="mini" id="csvmsg"></span></div></div></div>
 <script id="datos-embebidos" type="application/json">{"config": {"tramos_descuento": {"ejecutivo_max_pct": 5, "jefatura_max_pct": 10}}, "tablas": {"clientes": [{"id_cliente": "CLI-001", "nombre_comercial": "La Alameda", "habilitado_erp": "SI"}, {"id_cliente": "CLI-002", "nombre_comercial": "Nuevo Horizonte", "habilitado_erp": "NO"}, {"id_cliente": "CLI-003", "nombre_comercial": "Del Sol", "habilitado_erp": "NO"}, {"id_cliente": "CLI-004", "nombre_comercial": "San Joaquín", "habilitado_erp": "NO"}, {"id_cliente": "CLI-101", "nombre_comercial": "Santa Rosa", "habilitado_erp": "SI"}, {"id_cliente": "CLI-102", "nombre_comercial": "El Progreso", "habilitado_erp": "SI"}, {"id_cliente": "CLI-103", "nombre_comercial": "Bodegas Unidas", "habilitado_erp": "SI"}, {"id_cliente": "CLI-104", "nombre_comercial": "Catering Los Olivos", "habilitado_erp": "SI"}]}}</script>
 <script>
@@ -294,6 +303,7 @@ code { font-family: var(--mono); font-size: .86em; background: #eef2f8; padding:
 
       // Reproduce los mensajes nuevos (con la animación de "escribiendo…") y después actualiza los paneles.
       function aplicar(j, conAnimacion) {
+        if (j.clientes_extra) emit("clientes_extra", j.clientes_extra);
         var miGen = gen, nuevos = (j.nuevos || []).slice().sort(function (a, b) { return a.seq - b.seq; });
         var p = Promise.resolve();
         nuevos.forEach(function (m) {
@@ -350,6 +360,11 @@ code { font-family: var(--mono); font-size: .86em; background: #eef2f8; padding:
             reiniciarLocal();
             return llamar({ op: "iniciar", desde: 0 }).then(function (j) { return aplicar(j, false); }).catch(falla);
           });
+        },
+        nuevoCliente: function (datos) { // crea un cliente (lead) solo para esta sesión y entra como él; si falla, se restaura la conversación
+          reiniciarLocal();
+          return enColaCon(function () { return llamar({ op: "nuevo_cliente", nuevo: datos, desde: 0 }).then(function (j) { return aplicar(j, true); }); })
+            .catch(function (e) { API.saludar(); throw e; });
         },
         setCliente: function (id) {
           cliente = id; reiniciarLocal();
@@ -421,7 +436,8 @@ code { font-family: var(--mono); font-size: .86em; background: #eef2f8; padding:
     emit: function (ev, d) {
       if (ev === "msg") pintarMsg(d);
       else if (ev === "escribiendo") escribiendo(d);
-      else if (ev === "cliente") { $("#cliente").value = d; }
+      else if (ev === "clientes_extra") { armarSelect(d); }
+      else if (ev === "cliente") { clienteActual = d; $("#cliente").value = d; }
       else if (ev === "tareas") { pintarBandeja(); pintarEstado(); }
       else if (ev === "traza") pintarTraza();
       else if (ev === "erp") pintarERP();
@@ -596,7 +612,7 @@ code { font-family: var(--mono); font-size: .86em; background: #eef2f8; padding:
     });
   }
   function probar(e) {
-    $("#cliente").value = e.c; fecha = FECHA_DEMO; $("#fecha").value = fecha;
+    $("#cliente").value = e.c; clienteActual = e.c; fecha = FECHA_DEMO; $("#fecha").value = fecha;
     A.reiniciar(e.c).then(function () { setTimeout(function () { enviar(e.m); }, 400); });
   }
 
@@ -634,18 +650,44 @@ code { font-family: var(--mono); font-size: .86em; background: #eef2f8; padding:
     c.appendChild(h("div", { class: "doc" }, h("h3", null, "Supuestos"), h("ul", null,
       h("li", null, "Datos sintéticos del caso académico (productos, clientes, lotes y aprobaciones de ejemplo), guardados en una base de datos (Supabase). Cada visitante tiene su propia sesión de prueba, aislada de las demás."),
       h("li", null, "Las decisiones de Jefatura, Finanzas, Planeamiento y Datos maestros las simula quien opera la demostración."),
-      h("li", null, "La fecha del sistema está fijada en 10/11/2026 para que el stock y las reposiciones del caso den resultados reproducibles; se puede cambiar arriba."))));
+      h("li", null, "La fecha del sistema arranca en el día de hoy y se puede cambiar arriba. Los clientes nuevos se crean como potenciales (sin habilitar en el ERP) y viven solo en su sesión."))));
+  }
+
+  // ---------------------------------------------------------------- clientes
+  var clienteActual = "CLI-001";
+  function armarSelect(extras) { // clientes del caso + los creados en esta sesión + la opción de crear uno nuevo
+    var sel = $("#cliente"), actual = clienteActual;
+    while (sel.firstChild) sel.removeChild(sel.firstChild);
+    EMB.tablas.clientes.concat(extras || []).forEach(function (c) {
+      sel.appendChild(h("option", { value: c.id_cliente }, c.nombre_comercial + " · " + c.id_cliente + (String(c.habilitado_erp).toUpperCase() === "SI" ? "" : " (no habilitado)")));
+    });
+    sel.appendChild(h("option", { value: "__nuevo__" }, "＋ Nuevo cliente…"));
+    sel.value = actual;
+  }
+  function abrirNuevoCliente() {
+    ["#nc_nombre", "#nc_razon", "#nc_distrito"].forEach(function (k) { $(k).value = ""; });
+    $("#nc_canal").selectedIndex = 0; $("#nc_msg").textContent = ""; $("#modalcli").hidden = false; $("#nc_nombre").focus();
   }
 
   // ---------------------------------------------------------------- arranque
   function iniciar() {
-    EMB.tablas.clientes.forEach(function (c) {
-      $("#cliente").appendChild(h("option", { value: c.id_cliente }, c.nombre_comercial + " · " + c.id_cliente + (String(c.habilitado_erp).toUpperCase() === "SI" ? "" : " (no habilitado)")));
+    armarSelect([]);
+    $("#cliente").addEventListener("change", function () {
+      if (this.value === "__nuevo__") { this.value = clienteActual; abrirNuevoCliente(); return; }
+      clienteActual = this.value; A.setCliente(this.value);
     });
-    $("#cliente").addEventListener("change", function () { A.setCliente(this.value); });
+    $("#nc_cancelar").addEventListener("click", function () { $("#modalcli").hidden = true; });
+    $("#nc_crear").addEventListener("click", function () {
+      var nombre = $("#nc_nombre").value.trim();
+      if (nombre.length < 2) { $("#nc_msg").textContent = "Escriba el nombre comercial."; return; }
+      $("#nc_crear").disabled = true; $("#nc_msg").textContent = "";
+      A.nuevoCliente({ nombre_comercial: nombre, razon_social: $("#nc_razon").value.trim(), canal: $("#nc_canal").value, distrito: $("#nc_distrito").value.trim() })
+        .then(function () { $("#modalcli").hidden = true; }, function (e) { $("#nc_msg").textContent = (e && e.message) || "No se pudo crear el cliente."; })
+        .then(function () { $("#nc_crear").disabled = false; });
+    });
     $("#fecha").value = fecha;
     $("#fecha").addEventListener("change", function () { if (/^\d{4}-\d{2}-\d{2}$/.test(this.value)) fecha = this.value; });
-    $("#reiniciar").addEventListener("click", function () { A.reiniciar($("#cliente").value); });
+    $("#reiniciar").addEventListener("click", function () { A.reiniciar(clienteActual); });
     $("#csv").addEventListener("click", function () { $("#csvtxt").value = "Cargando…"; $("#csvmsg").textContent = ""; $("#modal").hidden = false; A.csv().then(function (t) { $("#csvtxt").value = t; }); });
     $("#csvcerrar").addEventListener("click", function () { $("#modal").hidden = true; });
     $("#csvcopiar").addEventListener("click", function () {

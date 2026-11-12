@@ -57,6 +57,7 @@
 
       // Reproduce los mensajes nuevos (con la animación de "escribiendo…") y después actualiza los paneles.
       function aplicar(j, conAnimacion) {
+        if (j.clientes_extra) emit("clientes_extra", j.clientes_extra);
         var miGen = gen, nuevos = (j.nuevos || []).slice().sort(function (a, b) { return a.seq - b.seq; });
         var p = Promise.resolve();
         nuevos.forEach(function (m) {
@@ -113,6 +114,11 @@
             reiniciarLocal();
             return llamar({ op: "iniciar", desde: 0 }).then(function (j) { return aplicar(j, false); }).catch(falla);
           });
+        },
+        nuevoCliente: function (datos) { // crea un cliente (lead) solo para esta sesión y entra como él; si falla, se restaura la conversación
+          reiniciarLocal();
+          return enColaCon(function () { return llamar({ op: "nuevo_cliente", nuevo: datos, desde: 0 }).then(function (j) { return aplicar(j, true); }); })
+            .catch(function (e) { API.saludar(); throw e; });
         },
         setCliente: function (id) {
           cliente = id; reiniciarLocal();

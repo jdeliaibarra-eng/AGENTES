@@ -41,6 +41,12 @@
     <div class="pane" id="pane-doc"><div id="doc" style="display:flex;flex-direction:column;gap:14px"></div></div>
   </section>
 </main>
+<div id="modalcli" class="modal" hidden><div class="modal-c" style="width:min(460px,100%)"><h3>Nuevo cliente</h3><p class="mini">Se crea como cliente potencial en el CRM: todavía no está habilitado en el ERP ni tiene línea de crédito. Vive solo en su sesión.</p>
+<label class="fld">Nombre comercial *<input id="nc_nombre" maxlength="60" autocomplete="off"></label>
+<label class="fld">Razón social<input id="nc_razon" maxlength="90" autocomplete="off" placeholder="Si lo deja vacío se usa el nombre comercial"></label>
+<label class="fld">Canal<select id="nc_canal"><option>Mayorista</option><option>Minorista</option><option>Bodega</option><option>Autoservicio</option></select></label>
+<label class="fld">Distrito<input id="nc_distrito" maxlength="40" autocomplete="off"></label>
+<div class="acc"><button class="btn az" id="nc_crear" type="button">Crear y entrar</button><button class="btn mal" id="nc_cancelar" type="button">Cancelar</button><span class="mini" id="nc_msg" style="color:var(--mal)"></span></div></div></div>
 <div id="modal" class="modal" hidden><div class="modal-c"><h3>Bitácora del agente (CSV)</h3><p class="mini">Copie el texto y péguelo en un archivo .csv o en Excel.</p><textarea id="csvtxt" readonly rows="10"></textarea><div class="acc"><button class="btn az" id="csvcopiar" type="button">Copiar</button><button class="btn mal" id="csvcerrar" type="button">Cerrar</button><span class="mini" id="csvmsg"></span></div></div></div>
 <script id="datos-embebidos" type="application/json">/*DATOS*/</script>
 <script>
