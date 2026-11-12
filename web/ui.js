@@ -249,6 +249,10 @@
     $("#cliente").addEventListener("change", function () { A.setCliente(this.value); });
     $("#fecha").value = fecha;
     $("#fecha").addEventListener("change", function () { if (/^\d{4}-\d{2}-\d{2}$/.test(this.value)) fecha = this.value; });
+    $("#hoy").addEventListener("click", function () { // fecha real de hoy en Lima (la fecha del caso es 2026-11-10)
+      var d = new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" });
+      if (/^\d{4}-\d{2}-\d{2}$/.test(d)) { fecha = d; $("#fecha").value = d; }
+    });
     $("#reiniciar").addEventListener("click", function () { A.reiniciar($("#cliente").value); });
     $("#csv").addEventListener("click", function () { $("#csvtxt").value = "Cargando…"; $("#csvmsg").textContent = ""; $("#modal").hidden = false; A.csv().then(function (t) { $("#csvtxt").value = t; }); });
     $("#csvcerrar").addEventListener("click", function () { $("#modal").hidden = true; });
