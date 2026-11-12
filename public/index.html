@@ -235,7 +235,7 @@ code { font-family: var(--mono); font-size: .86em; background: #eef2f8; padding:
     <div class="pane" id="pane-doc"><div id="doc" style="display:flex;flex-direction:column;gap:14px"></div></div>
   </section>
 </main>
-<div id="modalcli" class="modal" hidden><div class="modal-c" style="width:min(460px,100%)"><h3>Nuevo cliente</h3><p class="mini">Se crea como cliente potencial en el CRM: todavía no está habilitado en el ERP ni tiene línea de crédito. Vive solo en su sesión.</p>
+<div id="modalcli" class="modal" hidden><div class="modal-c" style="width:min(460px,100%)"><h3>Nuevo cliente</h3><p class="mini">Se crea como cliente potencial en el CRM: todavía no está habilitado en el ERP ni tiene línea de crédito. Se guarda en la base de datos.</p>
 <label class="fld">Nombre comercial *<input id="nc_nombre" maxlength="60" autocomplete="off"></label>
 <label class="fld">Razón social<input id="nc_razon" maxlength="90" autocomplete="off" placeholder="Si lo deja vacío se usa el nombre comercial"></label>
 <label class="fld">Canal<select id="nc_canal"><option>Mayorista</option><option>Minorista</option><option>Bodega</option><option>Autoservicio</option></select></label>
@@ -650,7 +650,7 @@ code { font-family: var(--mono); font-size: .86em; background: #eef2f8; padding:
     c.appendChild(h("div", { class: "doc" }, h("h3", null, "Supuestos"), h("ul", null,
       h("li", null, "Datos sintéticos del caso académico (productos, clientes, lotes y aprobaciones de ejemplo), guardados en una base de datos (Supabase). Cada visitante tiene su propia sesión de prueba, aislada de las demás."),
       h("li", null, "Las decisiones de Jefatura, Finanzas, Planeamiento y Datos maestros las simula quien opera la demostración."),
-      h("li", null, "La fecha del sistema arranca en el día de hoy y se puede cambiar arriba. Los clientes nuevos se crean como potenciales (sin habilitar en el ERP) y viven solo en su sesión."))));
+      h("li", null, "La fecha del sistema arranca en el día de hoy y se puede cambiar arriba. Los clientes nuevos se crean como potenciales (sin habilitar en el ERP) y se guardan en la base de datos."))));
   }
 
   // ---------------------------------------------------------------- clientes

@@ -243,7 +243,7 @@
     c.appendChild(h("div", { class: "doc" }, h("h3", null, "Supuestos"), h("ul", null,
       h("li", null, "Datos sintéticos del caso académico (productos, clientes, lotes y aprobaciones de ejemplo), guardados en una base de datos (Supabase). Cada visitante tiene su propia sesión de prueba, aislada de las demás."),
       h("li", null, "Las decisiones de Jefatura, Finanzas, Planeamiento y Datos maestros las simula quien opera la demostración."),
-      h("li", null, "La fecha del sistema arranca en el día de hoy y se puede cambiar arriba. Los clientes nuevos se crean como potenciales (sin habilitar en el ERP) y viven solo en su sesión."))));
+      h("li", null, "La fecha del sistema arranca en el día de hoy y se puede cambiar arriba. Los clientes nuevos se crean como potenciales (sin habilitar en el ERP) y se guardan en la base de datos."))));
   }
 
   // ---------------------------------------------------------------- clientes
