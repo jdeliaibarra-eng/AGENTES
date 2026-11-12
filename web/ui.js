@@ -191,8 +191,8 @@
     { t: "Pedir otro descuento después de cotizar", d: "Cada descuento nuevo es una versión nueva con su propia validación.", c: "CLI-001", m: "Quiero 150 cajas de leche UHT entera", p: "Después escriba: «¿me puede dar 9 % de descuento?»" },
     { t: "Descuento fuera de política (12 %)", d: "Sobre 10 % nadie lo autoriza: ofrece lo máximo permitido.", c: "CLI-001", m: "Quiero 100 cajas de leche UHT entera con 12 % de descuento", p: "Pruebe el botón «Solicitar 10 %»." },
     { t: "Crédito insuficiente", d: "El total supera el crédito disponible: escala a Finanzas.", c: "CLI-102", m: "Quiero 50 cajas de leche UHT entera", p: "Confirme y luego resuelva en Bandeja interna." },
-    { t: "Falta stock, hay reposición sustentada", d: "Propone entrega en dos momentos; sin aceptación no hay pedido.", c: "CLI-001", m: "Necesito 60 cajas de leche evaporada para pasado mañana", p: "Acepte o rechace la entrega en dos momentos." },
-    { t: "Falta stock, sin fecha sustentada", d: "El agente no inventa fechas: ofrece lo disponible o consulta a Planeamiento.", c: "CLI-001", m: "Necesito 100 cajas de leche evaporada", p: "Pruebe «Pedir solo lo disponible»." },
+    { t: "Falta stock, hay reposición sustentada", d: "Propone entrega en dos momentos; sin aceptación no hay pedido.", c: "CLI-001", m: "Necesito 60 cajas de leche evaporada normal para pasado mañana", p: "Acepte o rechace la entrega en dos momentos." },
+    { t: "Falta stock, sin fecha sustentada", d: "El agente no inventa fechas: ofrece lo disponible o consulta a Planeamiento.", c: "CLI-001", m: "Necesito 100 cajas de leche evaporada normal", p: "Pruebe «Pedir solo lo disponible»." },
     { t: "Cliente no habilitado en el ERP", d: "Cotiza como referencia y pide el alta a Datos maestros.", c: "CLI-002", m: "Quiero 10 cajas de leche UHT entera", p: "Habilite al cliente en Bandeja interna." },
     { t: "Producto ambiguo y producto sin costeo", d: "Pregunta cuál presentación y no cotiza lo que no tiene precio revisado.", c: "CLI-001", m: "Quiero 50 cajas de leche UHT", p: "Luego pruebe «yogurt vainilla»." }
   ];
