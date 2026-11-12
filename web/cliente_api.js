@@ -28,7 +28,7 @@
 
   window.ChatAgenteApi = {
     crear: function (opts) {
-      var emitExterno = opts.emit || function () {}, base = opts.base || "", getFecha = opts.fecha || function () { return "2026-11-10"; };
+      var emitExterno = opts.emit || function () {}, base = opts.base || "", getFecha = opts.fecha || function () { return new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" }); };
       var sid = sesionId(), cliente = opts.cliente || "CLI-001", vista = VISTA_VACIA();
       var ultimoSeq = 0, ultimoRev = -1, cola = Promise.resolve(), ocupado = 0, pendCli = 0, gen = 0;
 

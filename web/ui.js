@@ -2,7 +2,11 @@
 (function () {
   "use strict";
   var EMB = JSON.parse(document.getElementById("datos-embebidos").textContent);
-  var FECHA_DEMO = "2026-11-10"; // fecha simulada: las fotos de stock y reposiciones de la tabla están alrededor de este día
+  function hoyLima() { // fecha real de hoy en Lima, AAAA-MM-DD
+    try { var d = new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" }); if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d; } catch (e) {}
+    return new Date().toISOString().slice(0, 10);
+  }
+  var FECHA_DEMO = hoyLima(); // la fecha del sistema arranca siempre en el día de hoy (se puede cambiar a mano)
 
   function $(s, r) { return (r || document).querySelector(s); }
   function h(tag, attrs) {
@@ -249,10 +253,6 @@
     $("#cliente").addEventListener("change", function () { A.setCliente(this.value); });
     $("#fecha").value = fecha;
     $("#fecha").addEventListener("change", function () { if (/^\d{4}-\d{2}-\d{2}$/.test(this.value)) fecha = this.value; });
-    $("#hoy").addEventListener("click", function () { // fecha real de hoy en Lima (la fecha del caso es 2026-11-10)
-      var d = new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" });
-      if (/^\d{4}-\d{2}-\d{2}$/.test(d)) { fecha = d; $("#fecha").value = d; }
-    });
     $("#reiniciar").addEventListener("click", function () { A.reiniciar($("#cliente").value); });
     $("#csv").addEventListener("click", function () { $("#csvtxt").value = "Cargando…"; $("#csvmsg").textContent = ""; $("#modal").hidden = false; A.csv().then(function (t) { $("#csvtxt").value = t; }); });
     $("#csvcerrar").addEventListener("click", function () { $("#modal").hidden = true; });
